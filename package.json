@@ -1,7 +1,7 @@
 {
     "name": "cliproxy-for-copilot",
     "displayName": "CLIProxy for Copilot",
-    "description": "将 CLIProxyAPI 作为 VS Code Copilot 的自定义语言模型提供商，免费使用 Gemini、GPT、Claude 等大模型",
+    "description": "将 CLIProxyAPI 作为 VS Code Copilot 的自定义语言模型提供商，使用 Gemini、GPT、Claude 等大模型",
     "version": "0.1.2606101916",
     "publisher": "easyatm",
     "repository": {
