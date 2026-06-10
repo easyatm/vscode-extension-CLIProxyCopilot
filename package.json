@@ -1,87 +1,92 @@
 {
-  "name": "cliproxy-for-copilot",
-  "displayName": "CLIProxy for Copilot",
-  "description": "将 CLIProxyAPI 作为 VS Code Copilot 的自定义语言模型提供商，免费使用 Gemini、GPT、Claude 等大模型",
-  "version": "0.1.0",
-  "engines": {
-    "vscode": "^1.103.0"
-  },
-  "categories": [
-    "AI",
-    "Chat"
-  ],
-  "keywords": [
-    "copilot",
-    "ai",
-    "cliproxyapi",
-    "gemini",
-    "claude",
-    "gpt",
-    "language-model"
-  ],
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-  "main": "./out/extension.js",
-  "contributes": {
-    "languageModelChatProviders": [
-      {
-        "vendor": "cliproxyapi",
-        "displayName": "CLIProxyAPI",
-        "managementCommand": "cliproxy.manage"
-      }
+    "name": "cliproxy-for-copilot",
+    "displayName": "CLIProxy for Copilot",
+    "description": "将 CLIProxyAPI 作为 VS Code Copilot 的自定义语言模型提供商，免费使用 Gemini、GPT、Claude 等大模型",
+    "version": "0.1.2606101916",
+    "publisher": "easyatm",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/easyatm/vscode-extension-CLIProxyCopilot"
+    },
+    "engines": {
+        "vscode": "^1.103.0"
+    },
+    "categories": [
+        "AI",
+        "Chat"
     ],
-    "commands": [
-      {
-        "command": "cliproxy.manage",
-        "title": "配置服务器地址和 API Key",
-        "category": "CLIProxy"
-      },
-      {
-        "command": "cliproxy.refreshModels",
-        "title": "刷新可用模型列表",
-        "category": "CLIProxy"
-      }
+    "keywords": [
+        "copilot",
+        "ai",
+        "cliproxyapi",
+        "gemini",
+        "claude",
+        "gpt",
+        "language-model"
     ],
-    "configuration": {
-      "title": "CLIProxy for Copilot",
-      "properties": {
-        "cliproxy.serverUrl": {
-          "type": "string",
-          "default": "http://localhost:8317",
-          "description": "CLIProxyAPI 服务器地址（例如 http://localhost:8317）"
-        },
-        "cliproxy.apiKey": {
-          "type": "string",
-          "default": "",
-          "markdownDescription": "CLIProxyAPI 的 API Key。如果服务器未配置访问密钥，可留空。"
-        },
-        "cliproxy.requestTimeout": {
-          "type": "number",
-          "default": 120,
-          "description": "请求超时时间（秒）",
-          "minimum": 10,
-          "maximum": 600
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "languageModelChatProviders": [
+            {
+                "vendor": "cliproxyapi",
+                "displayName": "CLIProxyAPI",
+                "managementCommand": "cliproxy.manage"
+            }
+        ],
+        "commands": [
+            {
+                "command": "cliproxy.manage",
+                "title": "配置服务器地址和 API Key",
+                "category": "CLIProxy"
+            },
+            {
+                "command": "cliproxy.refreshModels",
+                "title": "刷新可用模型列表",
+                "category": "CLIProxy"
+            }
+        ],
+        "configuration": {
+            "title": "CLIProxy for Copilot",
+            "properties": {
+                "cliproxy.serverUrl": {
+                    "type": "string",
+                    "default": "http://localhost:8317",
+                    "description": "CLIProxyAPI 服务器地址（例如 http://localhost:8317）"
+                },
+                "cliproxy.apiKey": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "CLIProxyAPI 的 API Key。如果服务器未配置访问密钥，可留空。"
+                },
+                "cliproxy.requestTimeout": {
+                    "type": "number",
+                    "default": 120,
+                    "description": "请求超时时间（秒）",
+                    "minimum": 10,
+                    "maximum": 600
+                }
+            }
         }
-      }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.103.0",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "22.x",
+        "typescript-eslint": "^8.56.1",
+        "eslint": "^9.39.3",
+        "typescript": "^5.9.3",
+        "@vscode/test-cli": "^0.0.12",
+        "@vscode/test-electron": "^2.5.2"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.103.0",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "typescript-eslint": "^8.56.1",
-    "eslint": "^9.39.3",
-    "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
-  }
 }
