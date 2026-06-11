@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-{{nonce}}';">
+    <title>CLIProxy Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--vscode-editor-background);
+            color: var(--vscode-editor-foreground);
+            line-height: 1.6;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--vscode-symbolIcon-functionForeground);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: space-between;
+        }
+
+        .title-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .title-status {
+            margin-top: 0;
+            min-height: 0;
+            padding: 6px 10px;
+            font-size: 12px;
+            max-width: 60%;
+            text-align: right;
+        }
+
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--vscode-panel-border);
+            color: var(--vscode-symbolIcon-functionForeground);
+        }
+
+        .section {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: var(--vscode-sideBar-background);
+            border-radius: 6px;
+            border: 1px solid var(--vscode-panel-border);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--vscode-input-foreground);
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--vscode-input-border);
+            border-radius: 4px;
+            background: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--vscode-focusBorder);
+        }
+
+        input::placeholder {
+            color: var(--vscode-input-placeholderForeground);
+        }
+
+        button {
+            padding: 8px 16px;
+            background: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: 1px solid var(--vscode-button-border, transparent);
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.1s ease, color 0.1s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        button:hover {
+            background: var(--vscode-button-hoverBackground);
+        }
+
+        button:active {
+            background: var(--vscode-button-background);
+        }
+
+        .btn-danger {
+            background: transparent;
+            border: 1px solid var(--vscode-testing-iconFailed, #f14c4c);
+            color: var(--vscode-testing-iconFailed, #f14c4c);
+        }
+
+        .btn-danger:hover {
+            background: var(--vscode-testing-iconFailed, #f14c4c);
+            color: #ffffff;
+        }
+
+        .btn-secondary {
+            background: var(--vscode-button-secondaryBackground);
+            color: var(--vscode-button-secondaryForeground);
+            border: 1px solid var(--vscode-button-secondaryBorder, transparent);
+        }
+
+        .btn-secondary:hover {
+            background: var(--vscode-button-secondaryHoverBackground);
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .status {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            min-height: 40px;
+            display: block;
+            visibility: hidden;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .status.success {
+            background: rgba(51, 194, 94, 0.15);
+            color: #33c25e;
+            border: 1px solid rgba(51, 194, 94, 0.3);
+            visibility: visible;
+        }
+
+        .status.error {
+            background: rgba(229, 76, 92, 0.15);
+            color: #e54c5c;
+            border: 1px solid rgba(229, 76, 92, 0.3);
+            visibility: visible;
+        }
+
+        .status.loading {
+            background: rgba(200, 200, 200, 0.1);
+            color: var(--vscode-input-foreground);
+            border: 1px solid var(--vscode-panel-border);
+            visibility: visible;
+        }
+
+        .status.idle {
+            visibility: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            background: var(--vscode-editorWidget-background);
+            border: 1px solid var(--vscode-panel-border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: var(--vscode-editorWidget-border);
+        }
+
+        th {
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--vscode-input-foreground);
+            border-bottom: 1px solid var(--vscode-panel-border);
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--vscode-panel-border);
+            font-size: 13px;
+        }
+
+        tr:hover {
+            background: var(--vscode-list-hoverBackground);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-cell {
+            white-space: nowrap;
+            text-align: right;
+            width: 180px;
+        }
+
+        .action-cell button {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            padding: 4px 6px !important;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .icon-btn {
+            width: 28px;
+            height: 28px;
+            padding: 0 !important;
+            font-size: 14px;
+        }
+
+        .model-input-wrapper {
+            position: relative;
+        }
+
+        .input-with-action {
+            position: relative;
+        }
+
+        .input-with-action input {
+            padding-right: 42px;
+        }
+
+        .input-action-btn {
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: var(--vscode-input-placeholderForeground);
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .input-action-btn:hover {
+            background: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.08));
+            color: var(--vscode-input-foreground);
+        }
+
+        .input-action-btn:focus {
+            outline: 1px solid var(--vscode-focusBorder);
+            outline-offset: 1px;
+        }
+
+        .model-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--vscode-dropdown-background);
+            border: 1px solid var(--vscode-dropdown-border);
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .model-dropdown.show {
+            display: block;
+        }
+
+        .model-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--vscode-dropdown-foreground);
+            border-bottom: 1px solid var(--vscode-panel-border);
+        }
+
+        .model-option:hover {
+            background: var(--vscode-list-hoverBackground);
+            color: var(--vscode-list-hoverForeground);
+        }
+
+        .empty-state {
+            padding: 24px;
+            text-align: center;
+            color: var(--vscode-descriptionForeground);
+            font-size: 13px;
+            border: 1px dashed var(--vscode-panel-border);
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .basic-settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .basic-settings-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .basic-settings-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .row-three {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 100px;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .row-four {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr 1fr 100px;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 34px;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            display: inline;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--vscode-button-foreground);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: var(--vscode-descriptionForeground);
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            .basic-settings-grid {
+                grid-template-columns: 1fr;
+            }
+            .basic-settings-grid .full-width {
+                grid-column: auto;
+            }
+            .row-three {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+            .row-four {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+            .row-three button {
+                margin-top: 10px;
+                width: 100%;
+            }
+            .row-four button {
+                margin-top: 10px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span class="title-text" id="pageTitle">⚙️ CLIProxy Settings</span>
+            <span class="status title-status" id="globalStatus"></span>
+        </h1>
+
+        <!-- Server Configuration Section -->
+        <div class="section">
+            <h2 id="serverSectionTitle">服务器基本配置</h2>
+            <div class="basic-settings-grid">
+                <div class="form-group">
+                    <label for="serverUrl" id="serverUrlLabel">服务器地址</label>
+                    <input type="text" id="serverUrl" placeholder="http://localhost:8317" />
+                    <div class="help-text" id="serverUrlHelp">CLIProxyAPI 服务器的运行地址。</div>
+                </div>
+                <div class="form-group">
+                    <label for="apiKey" id="apiKeyLabel">服务密钥</label>
+                    <div class="input-with-action">
+                        <input type="password" id="apiKey" placeholder="若服务器不需要密钥可留空" />
+                        <button type="button" id="toggleApiKeyVisibility" class="input-action-btn" aria-label="显示密钥" title="显示密钥">👁</button>
+                    </div>
+                    <div class="help-text" id="apiKeyHelp">用来鉴权访问 CLIProxy 服务的密钥。</div>
+                </div>
+                <div class="form-group">
+                    <label for="requestTimeout" id="requestTimeoutLabel">请求超时时间（秒）</label>
+                    <input type="number" id="requestTimeout" min="10" max="600" value="120" />
+                    <div class="help-text" id="requestTimeoutHelp">与大模型请求的超时阈值（秒）。</div>
+                </div>
+                <div class="form-group">
+                    <label for="maxRepetitionCount" id="maxRepetitionCountLabel">最大复读连续重复次数限制</label>
+                    <input type="number" id="maxRepetitionCount" min="0" max="100" value="0" />
+                    <div class="help-text" id="maxRepetitionCountHelp">模型输出复读保护阈值，0 表示禁用。若开启最少设为 10 次。</div>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="logUsageStats" />
+                        <label for="logUsageStats" id="logUsageStatsLabel">在输出面板记录 usage 统计</label>
+                    </div>
+                    <div class="help-text" id="logUsageStatsHelp">当响应结尾包含 prompt_tokens 与 total_tokens 时，输出 usage JSON 到 CLIProxy 输出面板。</div>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="logToolCalls" />
+                        <label for="logToolCalls" id="logToolCallsLabel">在输出面板记录工具函数调用</label>
+                    </div>
+                    <div class="help-text" id="logToolCallsHelp">当模型触发 tool_calls 结束时，输出工具函数名和参数；参数解析失败时输出原始 arguments。</div>
+                </div>
+                <div class="form-group">
+                    <label for="logLevel" id="logLevelLabel">日志输出等级</label>
+                    <select id="logLevel">
+                        <option value="debug">debug</option>
+                        <option value="info">info</option>
+                        <option value="warn">warn</option>
+                        <option value="error">error</option>
+                        <option value="metric">metric</option>
+                    </select>
+                    <div class="help-text" id="logLevelHelp">仅输出大于或等于当前等级的日志。debug 最详细，metric 仅输出最高优先级的统计日志。</div>
+                </div>
+                <div class="actions-bar full-width">
+                    <button class="btn-primary" id="saveBasicBtn">保存配置</button>
+                    <button class="btn-secondary" id="testConnectionBtn">测试连接并获取可用模型</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Token Limits Section -->
+        <div class="section">
+            <h2 id="tokenSectionTitle">模型 Token 上限自定义管理</h2>
+            <p class="help-text" id="tokenSectionHelp" style="margin-bottom: 16px;">
+                此处可为匹配特定模式的模型单独配置 Token 上限，模型键直接使用 <code>&lt;provider&gt;::&lt;modelId&gt;</code> 形式，支持 <code>*</code> 通配符模糊匹配。
+            </p>
+
+            <div class="row-four">
+                <div class="form-group model-input-wrapper" style="margin-bottom: 0;">
+                    <label for="modelPattern" id="modelPatternLabel">
+                        模型名称或匹配模式
+                        <span class="help-text" id="modelPatternHelp" style="display: block; font-weight: normal; margin-top: 2px;">选择或输入，直接使用 <code>&lt;provider&gt;::&lt;modelId&gt;</code>，支持 <code>*</code> 通配符模糊匹配</span>
+                    </label>
+                    <input type="text" id="modelPattern" placeholder="例如: openai::gpt-5*" autocomplete="off" />
+                    <div class="model-dropdown" id="modelDropdown"></div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="maxInputTokens" id="maxInputTokensLabel">
+                        最大输入 Token 限制
+                        <span class="help-text" id="maxInputTokensHelp" style="display: block; font-weight: normal; margin-top: 2px;">例如: 32000, 32k, 1m</span>
+                    </label>
+                    <input type="text" id="maxInputTokens" placeholder="默认 128k" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="maxOutputTokens" id="maxOutputTokensLabel">
+                        最大输出 Token 限制
+                        <span class="help-text" id="maxOutputTokensHelp" style="display: block; font-weight: normal; margin-top: 2px;">例如: 8192, 8k, 16k</span>
+                    </label>
+                    <input type="text" id="maxOutputTokens" placeholder="默认 64k" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <button class="btn-primary" id="addLimitBtn" style="width: 100%; height: 34px; padding: 0;">添加</button>
+                </div>
+            </div>
+            <table id="limitsTable">
+                <thead>
+                    <tr>
+                        <th id="tablePatternHeader">模型模式</th>
+                        <th id="tableMaxInputHeader">最大输入</th>
+                        <th id="tableMaxOutputHeader">最大输出</th>
+                        <th id="tableActionsHeader" class="action-cell" style="width: 180px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="limitsTableBody">
+                </tbody>
+            </table>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                目前没有自定义 Token 限制，所有模型将默认推断估算额度。
+            </div>
+        </div>
+    </div>
+
+    <script nonce="{{nonce}}">
+        const vscode = acquireVsCodeApi();
+        const statusTimeouts = new Map();
+        const translations = {
+            zh: {
+                pageTitle: ' CLIProxy 设置',
+                serverSectionTitle: '服务器基本配置',
+                serverUrlLabel: '服务器地址',
+                serverUrlHelp: 'CLIProxyAPI 服务器的运行地址。',
+                apiKeyLabel: '服务密钥',
+                apiKeyPlaceholder: '若服务器不需要密钥可留空',
+                apiKeyHelp: '用来鉴权访问 CLIProxy 服务的密钥。',
+                showApiKey: '显示密钥',
+                hideApiKey: '隐藏密钥',
+                requestTimeoutLabel: '请求超时时间（秒）',
+                requestTimeoutHelp: '与大模型请求的超时阈值（秒）。',
+                maxRepetitionCountLabel: '最大复读连续重复次数限制',
+                maxRepetitionCountHelp: '模型输出复读保护阈值，0 表示禁用。若开启最少设为 10 次。',
+                logUsageStatsLabel: '在输出面板记录 usage 统计',
+                logUsageStatsHelp: '当响应结尾包含 prompt_tokens 与 total_tokens 时，输出 usage JSON 到 CLIProxy 输出面板。',
+                logToolCallsLabel: '在输出面板记录工具函数调用',
+                logToolCallsHelp: '当模型触发 tool_calls 结束时，输出工具函数名和参数；参数解析失败时输出原始 arguments。',
+                logLevelLabel: '日志输出等级',
+                logLevelHelp: '仅输出大于或等于当前等级的日志。debug 最详细，metric 仅输出最高优先级的统计日志。',
+                saveBasicBtn: '保存配置',
+                testConnectionBtn: '测试连接并获取可用模型',
+                tokenSectionTitle: '模型 Token 上限自定义管理',
+                tokenSectionHelp: '此处可为匹配特定模式的模型单独配置 Token 上限，模型键直接使用 <code>&lt;provider&gt;::&lt;modelId&gt;</code> 形式，支持 <code>*</code> 通配符模糊匹配。',
+                modelPatternLabel: '模型名称或匹配模式',
+                modelPatternHelp: '选择或输入，直接使用 <code>&lt;provider&gt;::&lt;modelId&gt;</code>，支持 <code>*</code> 通配符模糊匹配',
+                modelPatternPlaceholder: '例如: openai::gpt-5*',
+                maxInputTokensLabel: '最大输入 Token 限制',
+                maxInputTokensHelp: '例如: 32000, 32k, 1m',
+                maxInputTokensPlaceholder: '默认 128k',
+                maxOutputTokensLabel: '最大输出 Token 限制',
+                maxOutputTokensHelp: '例如: 8192, 8k, 16k',
+                maxOutputTokensPlaceholder: '默认 64k',
+                addLimitBtn: '保存',
+                tablePatternHeader: '模型模式',
+                tableMaxInputHeader: '最大输入',
+                tableMaxOutputHeader: '最大输出',
+                tableActionsHeader: '操作',
+                emptyState: '目前没有自定义 Token 限制，所有模型将默认推断估算额度。',
+                editBtn: '编辑',
+                moveUpTitle: '上移',
+                moveDownTitle: '下移',
+                deleteBtn: '删除',
+                globalStatusConnectionSuccess: (count) => `✅ 连接测试成功！发现 ${count} 个模型，可直接从下拉建议中选择。`,
+                globalStatusConnectionFailed: (error) => `❌ 连接测试失败: ${error}`,
+                globalStatusSaveSuccess: '✅ 配置保存成功，服务已重启刷新！',
+                globalStatusSaveFailed: (error) => `❌ 保存配置失败: ${error}`,
+                globalStatusServerRequired: '❌ 请输入服务器地址。',
+                globalStatusTesting: '<span class="spinner"></span>正在测试连接并提取模型...',
+                limitStatusUpdated: '✅ 已更新现有自定义规则！',
+                limitStatusPatternRequired: '❌ 请输入模型名称或通配符匹配规则。',
+                limitStatusPatternProviderRequired: '❌ 模型名称必须包含提供商前缀，格式为 <provider>::<modelId>，例如 openai::gpt-5*。',
+                limitStatusMaxInputRequired: '❌ 请输入最大输入 Token 限制。',
+                limitStatusMaxOutputRequired: '❌ 请输入最大输出 Token 限制。',
+                limitStatusMaxInputInvalid: '❌ 最大输入 Token 格式错误。支持数字、k、m 后缀。',
+                limitStatusMaxOutputInvalid: '❌ 最大输出 Token 格式错误。支持数字、k、m 后缀。',
+                limitStatusSaved: '✅ 自定义规则已保存应用！'
+            },
+            en: {
+                pageTitle: 'CLIProxy Settings',
+                serverSectionTitle: 'Server Settings',
+                serverUrlLabel: 'Server URL',
+                serverUrlHelp: 'Runtime address of the CLIProxyAPI server.',
+                apiKeyLabel: 'API Key',
+                apiKeyPlaceholder: 'Leave empty if no key is required',
+                apiKeyHelp: 'Key used to authenticate access to the CLIProxy service.',
+                showApiKey: 'Show API key',
+                hideApiKey: 'Hide API key',
+                requestTimeoutLabel: 'Request Timeout (Seconds)',
+                requestTimeoutHelp: 'Timeout threshold for model requests in seconds.',
+                maxRepetitionCountLabel: 'Maximum Consecutive Repetition Limit',
+                maxRepetitionCountHelp: 'Repetition protection threshold for model output. Set to 0 to disable. If enabled, set at least 10.',
+                logUsageStatsLabel: 'Log usage stats to output panel',
+                logUsageStatsHelp: 'When the final response includes prompt_tokens and total_tokens, output the usage JSON to the CLIProxy output channel.',
+                logToolCallsLabel: 'Log tool function calls to output panel',
+                logToolCallsHelp: 'When the model finishes tool_calls, output the function name and parameters; if parsing fails, output the raw arguments.',
+                logLevelLabel: 'Log Level',
+                logLevelHelp: 'Only logs at or above the selected level are shown. debug is most verbose, metric only shows the highest-priority metric logs.',
+                saveBasicBtn: 'Save Settings',
+                testConnectionBtn: 'Test Connection & Fetch Models',
+                tokenSectionTitle: 'Custom Model Token Limits',
+                tokenSectionHelp: 'Configure dedicated token limits for models matching a specific pattern. Use model keys directly in <code>&lt;provider&gt;::&lt;modelId&gt;</code> form, with wildcard <code>*</code> support.',
+                modelPatternLabel: 'Model Name or Pattern',
+                modelPatternHelp: 'Select or type using <code>&lt;provider&gt;::&lt;modelId&gt;</code>. Wildcard <code>*</code> matching is supported.',
+                modelPatternPlaceholder: 'Example: openai::gpt-5*',
+                maxInputTokensLabel: 'Max Input Token Limit',
+                maxInputTokensHelp: 'Example: 32000, 32k, 1m',
+                maxInputTokensPlaceholder: 'Default: 128k',
+                maxOutputTokensLabel: 'Max Output Token Limit',
+                maxOutputTokensHelp: 'Example: 8192, 8k, 16k',
+                maxOutputTokensPlaceholder: 'Default: 64k',
+                addLimitBtn: 'Save',
+                tablePatternHeader: 'Model Pattern',
+                tableMaxInputHeader: 'Max Input',
+                tableMaxOutputHeader: 'Max Output',
+                tableActionsHeader: 'Actions',
+                emptyState: 'No custom token limits yet. All models will use inferred default limits.',
+                editBtn: 'Edit',
+                moveUpTitle: 'Move Up',
+                moveDownTitle: 'Move Down',
+                deleteBtn: 'Delete',
+                globalStatusConnectionSuccess: (count) => `✅ Connection test succeeded! Found ${count} models. You can pick them from the suggestions list.`,
+                globalStatusConnectionFailed: (error) => `❌ Connection test failed: ${error}`,
+                globalStatusSaveSuccess: '✅ Settings saved successfully. Service has been refreshed.',
+                globalStatusSaveFailed: (error) => `❌ Failed to save settings: ${error}`,
+                globalStatusServerRequired: '❌ Please enter the server URL.',
+                globalStatusTesting: '<span class="spinner"></span>Testing connection and fetching models...',
+                limitStatusUpdated: '✅ Existing custom rule updated.',
+                limitStatusPatternRequired: '❌ Please enter a model name or wildcard pattern.',
+                limitStatusPatternProviderRequired: '❌ Model name must include the provider prefix in <provider>::<modelId> form, for example openai::gpt-5*.',
+                limitStatusMaxInputRequired: '❌ Please enter the max input token limit.',
+                limitStatusMaxOutputRequired: '❌ Please enter the max output token limit.',
+                limitStatusMaxInputInvalid: '❌ Invalid max input token format. Supports numbers and k/m suffixes.',
+                limitStatusMaxOutputInvalid: '❌ Invalid max output token format. Supports numbers and k/m suffixes.',
+                limitStatusSaved: '✅ Custom rule saved and applied.'
+            }
+        };
+        let i18n = translations.en;
+        let availableModels = [];
+        let currentLimits = [];
+        let isApiKeyVisible = false;
+        function resolveLocale(locale) {
+            const normalized = String(locale || '').toLowerCase();
+            return normalized.startsWith('zh') ? 'zh' : 'en';
+        }
+
+        function applyTranslations(locale) {
+            i18n = translations[resolveLocale(locale)];
+
+            document.getElementById('pageTitle').textContent = i18n.pageTitle;
+            document.getElementById('serverSectionTitle').textContent = i18n.serverSectionTitle;
+            document.getElementById('serverUrlLabel').textContent = i18n.serverUrlLabel;
+            document.getElementById('serverUrlHelp').textContent = i18n.serverUrlHelp;
+            document.getElementById('apiKeyLabel').textContent = i18n.apiKeyLabel;
+            document.getElementById('apiKey').placeholder = i18n.apiKeyPlaceholder;
+            document.getElementById('apiKeyHelp').textContent = i18n.apiKeyHelp;
+            updateApiKeyToggleButton();
+            document.getElementById('requestTimeoutLabel').textContent = i18n.requestTimeoutLabel;
+            document.getElementById('requestTimeoutHelp').textContent = i18n.requestTimeoutHelp;
+            document.getElementById('maxRepetitionCountLabel').textContent = i18n.maxRepetitionCountLabel;
+            document.getElementById('maxRepetitionCountHelp').textContent = i18n.maxRepetitionCountHelp;
+            document.getElementById('logUsageStatsLabel').textContent = i18n.logUsageStatsLabel;
+            document.getElementById('logUsageStatsHelp').textContent = i18n.logUsageStatsHelp;
+            document.getElementById('logToolCallsLabel').textContent = i18n.logToolCallsLabel;
+            document.getElementById('logToolCallsHelp').textContent = i18n.logToolCallsHelp;
+            document.getElementById('logLevelLabel').textContent = i18n.logLevelLabel;
+            document.getElementById('logLevelHelp').textContent = i18n.logLevelHelp;
+            document.getElementById('saveBasicBtn').textContent = i18n.saveBasicBtn;
+            document.getElementById('testConnectionBtn').textContent = i18n.testConnectionBtn;
+            document.getElementById('tokenSectionTitle').textContent = i18n.tokenSectionTitle;
+            document.getElementById('tokenSectionHelp').innerHTML = i18n.tokenSectionHelp;
+            document.getElementById('modelPatternLabel').childNodes[0].textContent = i18n.modelPatternLabel;
+            document.getElementById('modelPatternHelp').innerHTML = i18n.modelPatternHelp;
+            document.getElementById('modelPattern').placeholder = i18n.modelPatternPlaceholder;
+            document.getElementById('maxInputTokensLabel').childNodes[0].textContent = i18n.maxInputTokensLabel;
+            document.getElementById('maxInputTokensHelp').textContent = i18n.maxInputTokensHelp;
+            document.getElementById('maxInputTokens').placeholder = i18n.maxInputTokensPlaceholder;
+            document.getElementById('maxOutputTokensLabel').childNodes[0].textContent = i18n.maxOutputTokensLabel;
+            document.getElementById('maxOutputTokensHelp').textContent = i18n.maxOutputTokensHelp;
+            document.getElementById('maxOutputTokens').placeholder = i18n.maxOutputTokensPlaceholder;
+            document.getElementById('addLimitBtn').textContent = i18n.addLimitBtn;
+            document.getElementById('tablePatternHeader').textContent = i18n.tablePatternHeader;
+            document.getElementById('tableMaxInputHeader').textContent = i18n.tableMaxInputHeader;
+            document.getElementById('tableMaxOutputHeader').textContent = i18n.tableMaxOutputHeader;
+            document.getElementById('tableActionsHeader').textContent = i18n.tableActionsHeader;
+            document.getElementById('emptyState').textContent = i18n.emptyState;
+        }
+
+        function updateApiKeyToggleButton() {
+            const button = document.getElementById('toggleApiKeyVisibility');
+            const label = isApiKeyVisible ? i18n.hideApiKey : i18n.showApiKey;
+            button.textContent = isApiKeyVisible ? '🙈' : '👁';
+            button.setAttribute('aria-label', label);
+            button.setAttribute('title', label);
+        }
+
+        function isValidProviderQualifiedPattern(pattern) {
+            const trimmed = String(pattern || '').trim();
+            if (!trimmed.includes('::')) {
+                return false;
+            }
+
+            const separatorIndex = trimmed.indexOf('::');
+            const provider = trimmed.slice(0, separatorIndex).trim();
+            const modelId = trimmed.slice(separatorIndex + 2).trim();
+
+            return provider.length > 0 && modelId.length > 0;
+        }
+
+        // ==== UI Helpers ====
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = message;
+            el.className = 'status ' + (type || 'idle');
+        }
+
+        function clearStatus(elementId) {
+            showStatus(elementId, '', 'idle');
+        }
+
+        function showTemporaryStatus(elementId, message, type, timeoutMs = 3000) {
+            showStatus(elementId, message, type);
+
+            const existingTimeout = statusTimeouts.get(elementId);
+            if (existingTimeout) {
+                clearTimeout(existingTimeout);
+            }
+
+            const timeoutId = setTimeout(() => {
+                clearStatus(elementId);
+                statusTimeouts.delete(elementId);
+            }, timeoutMs);
+
+            statusTimeouts.set(elementId, timeoutId);
+        }
+
+        function clearInput() {
+            document.getElementById('modelPattern').value = '';
+            document.getElementById('maxInputTokens').value = '';
+            document.getElementById('maxOutputTokens').value = '';
+        }
+
+        function fillInput(rule) {
+            document.getElementById('modelPattern').value = rule.pattern || '';
+            document.getElementById('maxInputTokens').value = rule.maxInputTokens ?? '';
+            document.getElementById('maxOutputTokens').value = rule.maxOutputTokens ?? '';
+            document.getElementById('modelPattern').focus();
+            updateModelDropdown();
+        }
+
+        // ==== Initialize ====
+        window.addEventListener('load', () => {
+            vscode.postMessage({ command: 'getSettings' });
+        });
+
+        // ==== Message Handling ====
+        window.addEventListener('message', (event) => {
+            const message = event.data;
+            
+            switch (message.command) {
+                case 'sendSettings':
+                    handleSendSettings(message);
+                    break;
+                case 'sendModels':
+                    handleSendModels(message);
+                    break;
+                case 'testConnectionResult':
+                    handleTestConnectionResult(message);
+                    break;
+                case 'saveSettingsResult':
+                    handleSaveSettingsResult(message);
+                    break;
+            }
+        });
+
+        function handleSendSettings(message) {
+            const { locale, serverUrl, apiKey, requestTimeout, maxRepetitionCount, logUsageStats, logToolCalls, logLevel, customTokenLimits, availableModelsList } = message;
+
+            applyTranslations(locale);
+            
+            document.getElementById('serverUrl').value = serverUrl || '';
+            document.getElementById('apiKey').value = apiKey || '';
+            document.getElementById('requestTimeout').value = requestTimeout || 120;
+            document.getElementById('maxRepetitionCount').value = maxRepetitionCount || 0;
+            document.getElementById('logUsageStats').checked = !!logUsageStats;
+            document.getElementById('logToolCalls').checked = !!logToolCalls;
+            document.getElementById('logLevel').value = logLevel || 'info';
+            
+            availableModels = availableModelsList || [];
+            currentLimits = Array.isArray(customTokenLimits) ? customTokenLimits : [];
+            updateLimitsTable(currentLimits);
+        }
+
+        function handleSendModels(message) {
+            availableModels = message.models || [];
+            updateModelDropdown();
+        }
+
+        function handleTestConnectionResult(message) {
+            const { success, error, models } = message;
+            
+            if (success) {
+                showTemporaryStatus('globalStatus', i18n.globalStatusConnectionSuccess(models.length), 'success');
+                availableModels = models;
+                updateModelDropdown();
+            } else {
+                showTemporaryStatus('globalStatus', i18n.globalStatusConnectionFailed(error), 'error', 5000);
+            }
+        }
+
+        function handleSaveSettingsResult(message) {
+            const { success, error } = message;
+            if (success) {
+                showTemporaryStatus('globalStatus', i18n.globalStatusSaveSuccess, 'success');
+            } else {
+                showTemporaryStatus('globalStatus', i18n.globalStatusSaveFailed(error), 'error', 5000);
+            }
+        }
+
+        // ==== Model Dropdown ====
+        function updateModelDropdown() {
+            const input = document.getElementById('modelPattern');
+            const dropdown = document.getElementById('modelDropdown');
+            const val = input.value.trim().toLowerCase();
+            
+            dropdown.innerHTML = '';
+            
+            // 如果列表为空，直接隐藏
+            if (availableModels.length === 0) {
+                dropdown.classList.remove('show');
+                return;
+            }
+
+            const filteredModels = availableModels
+                .filter(m => m.id.toLowerCase().includes(val))
+                .sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id), undefined, { numeric: true, sensitivity: 'base' }));
+
+            if (filteredModels.length > 0) {
+                filteredModels.forEach(model => {
+                    const div = document.createElement('div');
+                    div.className = 'model-option';
+                    div.textContent = model.id;
+                    div.addEventListener('click', () => {
+                        input.value = model.id;
+                        dropdown.classList.remove('show');
+                    });
+                    dropdown.appendChild(div);
+                });
+                dropdown.classList.add('show');
+            } else {
+                dropdown.classList.remove('show');
+            }
+        }
+
+        document.getElementById('modelPattern').addEventListener('input', updateModelDropdown);
+        document.getElementById('toggleApiKeyVisibility').addEventListener('click', () => {
+            const apiKeyInput = document.getElementById('apiKey');
+            isApiKeyVisible = !isApiKeyVisible;
+            apiKeyInput.type = isApiKeyVisible ? 'text' : 'password';
+            updateApiKeyToggleButton();
+        });
+        document.getElementById('modelPattern').addEventListener('focus', () => {
+            updateModelDropdown();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.model-input-wrapper')) {
+                document.getElementById('modelDropdown').classList.remove('show');
+            }
+        });
+
+        // ==== Limits Table ====
+        function updateLimitsTable(limits) {
+            const tbody = document.getElementById('limitsTableBody');
+            const emptyState = document.getElementById('emptyState');
+            
+            tbody.innerHTML = '';
+            
+            if (!Array.isArray(limits) || limits.length === 0) {
+                emptyState.style.display = 'block';
+                document.getElementById('limitsTable').style.display = 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            document.getElementById('limitsTable').style.display = 'table';
+            
+            limits.forEach((config, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><code>${config.pattern}</code></td>
+                    <td>${config.maxInputTokens}</td>
+                    <td>${config.maxOutputTokens}</td>
+                    <td class="action-cell">
+                        <button class="btn-secondary btn-icon icon-btn" data-action="edit" data-index="${index}" title="${i18n.editBtn}">✏️</button>
+                        <button class="btn-secondary btn-icon" data-action="up" data-index="${index}" ${index === 0 ? 'disabled' : ''} title="${i18n.moveUpTitle}">↑</button>
+                        <button class="btn-secondary btn-icon" data-action="down" data-index="${index}" ${index === limits.length - 1 ? 'disabled' : ''} title="${i18n.moveDownTitle}">↓</button>
+                        <button class="btn-danger btn-icon icon-btn" data-pattern="${config.pattern}" title="${i18n.deleteBtn}">🗑</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // 统一绑定事件
+            tbody.querySelectorAll('button[data-action]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const button = e.currentTarget;
+                    if (button.disabled) {
+                        return;
+                    }
+                    const action = button.getAttribute('data-action');
+                    const index = parseInt(button.getAttribute('data-index'));
+                    if (action === 'edit') {
+                        fillInput(limits[index]);
+                        return;
+                    }
+                    vscode.postMessage({
+                        command: 'moveLimitRule',
+                        index: index,
+                        direction: action
+                    });
+                });
+            });
+
+            tbody.querySelectorAll('.btn-danger').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const button = e.currentTarget;
+                    const pattern = button.getAttribute('data-pattern');
+                    vscode.postMessage({
+                        command: 'deleteLimitRule',
+                        pattern: pattern
+                    });
+                });
+            });
+        }
+
+        // ==== Event Handlers ====
+        document.getElementById('testConnectionBtn').addEventListener('click', () => {
+            const serverUrl = document.getElementById('serverUrl').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!serverUrl) {
+                showStatus('globalStatus', i18n.globalStatusServerRequired, 'error');
+                return;
+            }
+            
+            showStatus('globalStatus', i18n.globalStatusTesting, 'loading');
+            vscode.postMessage({
+                command: 'testConnection',
+                serverUrl: serverUrl,
+                apiKey: apiKey
+            });
+        });
+
+        document.getElementById('saveBasicBtn').addEventListener('click', () => {
+            const serverUrl = document.getElementById('serverUrl').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const requestTimeout = parseInt(document.getElementById('requestTimeout').value) || 120;
+            const maxRepetitionCount = parseInt(document.getElementById('maxRepetitionCount').value) || 0;
+            const logUsageStats = document.getElementById('logUsageStats').checked;
+            const logToolCalls = document.getElementById('logToolCalls').checked;
+            const logLevel = document.getElementById('logLevel').value || 'info';
+            
+            if (!serverUrl) {
+                showStatus('globalStatus', i18n.globalStatusServerRequired, 'error');
+                return;
+            }
+            
+            vscode.postMessage({
+                command: 'saveSettings',
+                serverUrl: serverUrl,
+                apiKey: apiKey,
+                requestTimeout: requestTimeout,
+                maxRepetitionCount: maxRepetitionCount,
+                logUsageStats: logUsageStats,
+                logToolCalls: logToolCalls,
+                logLevel: logLevel
+            });
+        });
+
+        document.getElementById('addLimitBtn').addEventListener('click', () => {
+            const pattern = document.getElementById('modelPattern').value.trim();
+            const maxInputTokensVal = document.getElementById('maxInputTokens').value.trim();
+            const maxOutputTokensVal = document.getElementById('maxOutputTokens').value.trim();
+            const existingRule = currentLimits.find(item => item.pattern === pattern);
+            
+            if (!pattern) {
+                showStatus('globalStatus', i18n.limitStatusPatternRequired, 'error');
+                return;
+            }
+
+            if (!isValidProviderQualifiedPattern(pattern)) {
+                showStatus('globalStatus', i18n.limitStatusPatternProviderRequired, 'error');
+                return;
+            }
+            
+            if (!maxInputTokensVal) {
+                showStatus('globalStatus', i18n.limitStatusMaxInputRequired, 'error');
+                return;
+            }
+            
+            if (!maxOutputTokensVal) {
+                showStatus('globalStatus', i18n.limitStatusMaxOutputRequired, 'error');
+                return;
+            }
+
+            // 简单校验格式 (支持 32k, 1m, 数字)
+            const validateFormat = (val) => {
+                const clean = val.toLowerCase();
+                const num = parseFloat(clean);
+                if (isNaN(num) || num <= 0) {
+                    return false;
+                }
+                const suffix = clean.replace(num.toString(), '').trim();
+                return suffix === '' || suffix === 'k' || suffix === 'm';
+            };
+
+            if (!validateFormat(maxInputTokensVal)) {
+                showStatus('globalStatus', i18n.limitStatusMaxInputInvalid, 'error');
+                return;
+            }
+
+            if (!validateFormat(maxOutputTokensVal)) {
+                showStatus('globalStatus', i18n.limitStatusMaxOutputInvalid, 'error');
+                return;
+            }
+            
+            // 将输入转为最终值类型（如果仅输入数字则转为 number，若包含 k/m 则作为 string 传回）
+            let maxInputTokens = maxInputTokensVal;
+            if (/^\d+$/.test(maxInputTokensVal)) {
+                maxInputTokens = parseInt(maxInputTokensVal);
+            }
+            let maxOutputTokens = maxOutputTokensVal;
+            if (/^\d+$/.test(maxOutputTokensVal)) {
+                maxOutputTokens = parseInt(maxOutputTokensVal);
+            }
+
+            vscode.postMessage({
+                command: 'updateLimitRule',
+                pattern: pattern,
+                maxInputTokens: maxInputTokens,
+                maxOutputTokens: maxOutputTokens
+            });
+            
+            clearInput();
+            showTemporaryStatus('globalStatus', existingRule ? i18n.limitStatusUpdated : i18n.limitStatusSaved, 'success');
+        });
+    </script>
+</body>
+</html>
